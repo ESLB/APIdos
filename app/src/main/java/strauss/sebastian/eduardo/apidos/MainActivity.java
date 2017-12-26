@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     ListView mListView;
     @BindView(R.id.button)
     Button mButton;
+    @BindView(R.id.buttonPATCH)
+    Button mButtonPATCH;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +39,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        OkHttpClient.Builder okhttpClientBuilder = new OkHttpClient.Builder();
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+
+        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        okhttpClientBuilder.addInterceptor(logging);
+
         Retrofit.Builder builder = new Retrofit.Builder()
                 .baseUrl("http://api.github.com/")
-                .addConverterFactory(GsonConverterFactory.create());
+                .addConverterFactory(GsonConverterFactory.create()).client(okhttpClientBuilder.build());
         Retrofit retrofit = builder.build();
 
         //Retrofit Use
@@ -62,16 +70,24 @@ public class MainActivity extends AppCompatActivity {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Todo todo = new Todo("PruebaNueva", null,null, true);
+                Todo todo = new Todo(null, "Prueba Genial",null, null, true);
 
-                sendNetworkRequest(todo);
+                sendNetworkRequest(todo, "POST");
+            }
+        });
+
+        mButtonPATCH.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Todo todo = new Todo(null, "PATCHEADO, chévere", null, null, true);
+                sendNetworkRequest(todo, "PATCH");
             }
         });
 
     }
 
 
-    private void sendNetworkRequest(Todo todo){
+    private void sendNetworkRequest(Todo todo, String pedido){
 
         OkHttpClient.Builder okhttpClientBuilder = new OkHttpClient.Builder();
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
@@ -83,24 +99,48 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create()).client(okhttpClientBuilder.build());
 
         final Retrofit retrofit = builder.build();
-
         TodoClient client = retrofit.create(TodoClient.class);
-        Call<Todo> call = client.createAccount(todo);
 
-        call.enqueue(new Callback<Todo>() {
-            @Override
-            public void onResponse(Call<Todo> call, Response<Todo> response) {
-                Toast.makeText(MainActivity.this, "Hola" + response.body().getText()+ " " +
-                        response.body().getId()+" " + response.body().isCompleted(), Toast.LENGTH_SHORT).show();
-            }
+        if(pedido.equals("POST")) {
 
-            @Override
-            public void onFailure(Call<Todo> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "Fallo", Toast.LENGTH_SHORT).show();
-            }
-        });
+            Call<Todo> call = client.createAccount(todo);
+
+            call.enqueue(new Callback<Todo>() {
+                @Override
+                public void onResponse(Call<Todo> call, Response<Todo> response) {
+                    Toast.makeText(MainActivity.this, "Hola" + response.body().getText() + " " +
+                            response.body().getId() + " " + response.body().isCompleted() + " "+response.body().getCompletedAt()
+                            , Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Call<Todo> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Fallo", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }
+        else if(pedido.equals("PATCH")){
+
+            Call<Todo> call = client.updateAccount("5a415da67a4b27001472098c",todo);
+
+            call.enqueue(new Callback<Todo>() {
+                @Override
+                public void onResponse(Call<Todo> call, Response<Todo> response) {
+                    Toast.makeText(MainActivity.this, "Hola" + response.body().getText() + " " +
+                            response.body().getId() + " " + response.body().isCompleted() + " "+response.body().getCompletedAt()
+                            , Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onFailure(Call<Todo> call, Throwable t) {
+                    Toast.makeText(MainActivity.this, "Fallo", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }
+
+
     }
-
-
 
 }

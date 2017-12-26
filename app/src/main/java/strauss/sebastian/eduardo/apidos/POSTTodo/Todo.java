@@ -4,13 +4,15 @@ public class Todo {
 
     private String text;
     private String _id;
-    private Integer completedAt;
+    private Integer __v;
+    private String completedAt;
     private boolean completed;
 
 
-    public Todo(String mtext, String _id, Integer completedAt, boolean completed) {
-        this.text = mtext;
+    public Todo(String _id, String text, Integer __v, String completedAt, boolean completed) {
+        this.text = text;
         this._id= _id;
+        this.__v = __v;
         this.completedAt = completedAt;
         this.completed = completed;
     }
@@ -31,11 +33,11 @@ public class Todo {
         this.text = text;
     }
 
-    public Integer getCompletedAt() {
+    public String getCompletedAt() {
         return completedAt;
     }
 
-    public void setCompletedAt(Integer completedAt) {
+    public void setCompletedAt(String completedAt) {
         this.completedAt = completedAt;
     }
 
